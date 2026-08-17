@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>七夕浪漫约会邀请函 | A Special Qixi Invitation</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Noto+Serif+SC:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', 'Noto Serif SC', sans-serif;
+            background: radial-gradient(circle at 50% 20%, #2a081a 0%, #15030d 50%, #090106 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow-x: hidden;
+        }
+
+        html {
+            height: -webkit-fill-available;
+        }
+
+        .font-serif-custom {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Velvet Dark Glassmorphism Cards */
+        .glass-card {
+            background: rgba(35, 12, 24, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(244, 114, 182, 0.25);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card-interactive {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card-interactive:active {
+            transform: scale(0.97);
+        }
+
+        /* Pulsing & floating animations */
+        @keyframes heartPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(244,114,182,0.4)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(244,114,182,0.8)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(244,114,182,0.4)); }
+        }
+
+        .animate-heart-pulse {
+            animation: heartPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
+        }
+
+        .animate-float {
+            animation: floatSlow 4s infinite ease-in-out;
+        }
+
+        /* Smooth escape button transition */
+        #no-btn {
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1.2);
+            touch-action: manipulation;
+        }
+
+        /* Custom step transition helper classes */
+        .step-page {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .step-hidden {
+            display: none !important;
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+        }
+
+        /* Option Item Selection Glow */
+        .option-selected {
+            background: linear-gradient(135deg, rgba(225, 29, 72, 0.3) 0%, rgba(244, 114, 182, 0.2) 100%) !important;
+            border-color: rgba(244, 114, 182, 0.8) !important;
+            box-shadow: 0 0 15px rgba(244, 114, 182, 0.3) !important;
+            color: #ffffff !important;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #15030d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f472b6;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative selection:bg-rose-500 selection:text-white">
+
+    <canvas id="heartCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-80"></canvas>
+
+    <header class="fixed top-3 right-3 z-40 flex items-center gap-2">
+        <button id="bgmToggleBtn" onclick="toggleBGM()" class="glass-card p-3 rounded-full text-rose-300 hover:text-white active:scale-95 transition shadow-lg flex items-center justify-center cursor-pointer" title="浪漫背景音效">
+            <svg id="musicIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+            </svg>
+        </button>
+        <button onclick="openConfigModal()" class="glass-card px-3.5 py-2 rounded-full text-xs font-semibold text-rose-300 hover:text-white active:scale-95 transition shadow-lg flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            <span>定制卡片</span>
+        </button>
+    </header>
+
+    <main class="relative z-10 max-w-xl mx-auto px-4 py-6 md:py-12 flex flex-col items-center">
+
+        <!-- ================= STEP 1: PROPOSAL PAGE ================= -->
+        <section id="step1" class="step-page w-full glass-card rounded-3xl p-6 sm:p-10 text-center relative overflow-hidden my-auto">
+            <div class="absolute -top-4 -left-4 text-rose-400 opacity-30 animate-float text-5xl select-none">🌌</div>
+            <div class="absolute -bottom-4 -right-4 text-rose-400 opacity-30 animate-float text-6xl select-none" style="animation-delay: 2s;">💫</div>
+
+            <!-- Heart Header Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-rose-950/80 rounded-full text-rose-400 mb-5 animate-heart-pulse shadow-lg border border-rose-500/30">
+                <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+
+            <!-- Header Badge -->
+            <div class="inline-block px-3.5 py-1 bg-rose-950/90 text-rose-300 border border-rose-500/30 rounded-full text-xs font-semibold tracking-wider mb-3">
+                👩‍❤️‍👨 QIXI FESTIVAL INVITATION
+            </div>
+
+            <!-- Title & Letter Text -->
+            <h1 class="text-2xl sm:text-4xl font-serif-custom font-bold text-rose-100 mb-3 leading-tight">
+                亲爱的 <span id="targetName" class="text-rose-400 border-b-2 border-rose-400 pb-0.5">宝包</span>，
+            </h1>
+            
+            <p id="heroSubtitle" class="text-xs sm:text-sm text-slate-300 max-w-md mx-auto mb-8 leading-relaxed font-light">
+                纤云弄巧，飞星传恨，银河迢迢。又一年七夕佳节到了，我准备了一场专属于我们的浪漫约会。全宇宙最可爱的小仙女，你愿意陪我一起度过这个美好的夜晚吗？
+            </p>
+
+            <!-- Interactive Escaping Zone -->
+            <div id="interactiveZone" class="relative min-h-[140px] w-full flex flex-col items-center justify-center gap-4 my-2">
+                <!-- YES Button -->
+                <button id="yes-btn" onclick="goToStep2()" class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-base sm:text-lg rounded-full shadow-lg shadow-rose-900/50 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2">
+                    <span>好呀，我愿意！</span>
+                    <span class="text-xl">💖</span>
+                </button>
+
+                <!-- ESCAPE NO Button -->
+                <button id="no-btn" class="w-full sm:w-auto px-8 py-3 bg-slate-800/80 border border-slate-600 text-slate-300 font-medium text-xs sm:text-sm rounded-full shadow-sm cursor-pointer whitespace-nowrap select-none touch-none">
+                    <span id="noBtnText">考虑一下... 😜</span>
+                </button>
+            </div>
+
+            <p class="text-[11px] text-rose-400/80 mt-2 font-medium">✨ 悄悄告诉你：拒绝按钮会逃跑哦~</p>
+        </section>
+
+        <!-- ================= STEP 2: PREFERENCE & DATE DETAILS ================= -->
+        <section id="step2" class="step-page step-hidden w-full glass-card rounded-3xl p-5 sm:p-8 relative">
+            
+            <div class="text-center mb-6">
+                <span class="px-3 py-1 bg-rose-950/80 text-rose-300 border border-rose-500/30 text-[11px] font-semibold rounded-full">STEP 2 / 订制我们的七夕约会</span>
+                <h2 class="text-2xl font-serif-custom font-bold text-rose-100 mt-2">七夕约会细节选定 🌹</h2>
+                <p class="text-xs text-rose-300/80 mt-1">目标日期：2026年8月19日 (七夕佳节)</p>
+            </div>
+
+            <!-- Countdown Card -->
+            <div class="bg-rose-950/40 rounded-2xl p-4 mb-6 border border-rose-500/30 text-center shadow-inner">
+                <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-rose-300 mb-2">
+                    <svg class="w-4 h-4 animate-spin" style="animation-duration: 8s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>距离我们的七夕浪漫时刻还有</span>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-2 text-center max-w-xs mx-auto mb-1">
+                    <div class="bg-slate-900/80 rounded-xl p-2 border border-rose-500/20">
+                        <span id="timerDays" class="text-xl font-bold text-rose-400 font-mono">00</span>
+                        <span class="block text-[10px] text-slate-400">天</span>
+                    </div>
+                    <div class="bg-slate-900/80 rounded-xl p-2 border border-rose-500/20">
+                        <span id="timerHours" class="text-xl font-bold text-rose-400 font-mono">00</span>
+                        <span class="block text-[10px] text-slate-400">时</span>
+                    </div>
+                    <div class="bg-slate-900/80 rounded-xl p-2 border border-rose-500/20">
+                        <span id="timerMinutes" class="text-xl font-bold text-rose-400 font-mono">00</span>
+                        <span class="block text-[10px] text-slate-400">分</span>
+                    </div>
+                    <div class="bg-slate-900/80 rounded-xl p-2 border border-rose-500/20">
+                        <span id="timerSeconds" class="text-xl font-bold text-rose-400 font-mono">00</span>
+                        <span class="block text-[10px] text-slate-400">秒</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="preferenceForm" onsubmit="generateRSVP(event)" class="space-y-6">
+                
+                <!-- 1. Time Dropdown -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-rose-200 flex items-center gap-1">
+                        <span>⏰</span> 约会集合时间 (从 18:00 开始)
+                    </label>
+                    <select id="timeSelect" class="w-full px-4 py-3 bg-slate-900/90 border border-rose-500/30 rounded-xl text-sm font-semibold text-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none cursor-pointer shadow-sm" onchange="updateCountdownTarget()">
+                        <option value="18:00">18:00</option>
+                        <option value="18:30" selected>18:30</option>
+                        <option value="19:00">19:00</option>
+                        <option value="19:30">19:30</option>
+                        <option value="20:00">20:00</option>
+                        <option value="20:30">20:30</option>
+                        <option value="21:00">21:00</option>
+                    </select>
+                </div>
+
+                <!-- 2. Food Choice Selection -->
+                <div class="space-y-2.5">
+                    <label class="block text-xs font-bold text-rose-200 flex items-center justify-between">
+                        <span class="flex items-center gap-1">🍽️ 七夕大餐你想吃什么类型？</span>
+                        <span class="text-[10px] text-rose-400 font-normal">(可多选)</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="foodGrid">
+                        <button type="button" onclick="toggleFoodOption(this, '🥩 浪漫烛光西餐 · Western')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🥩</span> 浪漫烛光西餐</span>
+                            <span class="text-[10px] text-slate-400">Western</span>
+                        </button>
+                        <button type="button" onclick="toggleFoodOption(this, '🍣 精致日料料理 · Japanese')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🍣</span> 精致日料料理</span>
+                            <span class="text-[10px] text-slate-400">Japanese</span>
+                        </button>
+                        <button type="button" onclick="toggleFoodOption(this, '🥓 韩式风味料理 · Korean')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🥓</span> 韩式风味料理</span>
+                            <span class="text-[10px] text-slate-400">Korean</span>
+                        </button>
+                        <button type="button" onclick="toggleFoodOption(this, '🍢 炭火香气烧烤 · BBQ')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🍢</span> 炭火香气烧烤</span>
+                            <span class="text-[10px] text-slate-400">BBQ</span>
+                        </button>
+                        <button type="button" onclick="toggleFoodOption(this, '🍲 暖心沸腾火锅 · Hotpot')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🍲</span> 暖心沸腾火锅</span>
+                            <span class="text-[10px] text-slate-400">Hotpot</span>
+                        </button>
+                        <button type="button" onclick="toggleFoodOption(this, '🥢 地道中华风味 · Chinese')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🥢</span> 地道中华风味</span>
+                            <span class="text-[10px] text-slate-400">Chinese</span>
+                        </button>
+                        <button type="button" onclick="toggleFoodOption(this, '🏡 熟悉本地菜馆 · Local')" class="food-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between col-span-1 sm:col-span-2">
+                            <span class="flex items-center gap-2"><span>🏡</span> 熟悉本地菜馆</span>
+                            <span class="text-[10px] text-slate-400">Local Eatery</span>
+                        </button>
+                    </div>
+                    <input type="text" id="customFood" class="w-full px-3.5 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-xs text-rose-100 placeholder:text-slate-500 focus:ring-2 focus:ring-rose-400 focus:outline-none" placeholder="✏️ 或输入你想吃的特定餐厅或菜品...">
+                </div>
+
+                <!-- 3. After-Dinner Activity Selection -->
+                <div class="space-y-2.5">
+                    <label class="block text-xs font-bold text-rose-200 flex items-center justify-between">
+                        <span class="flex items-center gap-1">🎬 饭后想安排什么浪漫活动？</span>
+                        <span class="text-[10px] text-rose-400 font-normal">(可多选)</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="activityGrid">
+                        <button type="button" onclick="toggleActivityOption(this, '🍰 精致甜品探店 · Dessert Hunt')" class="activity-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🍰</span> 精致甜品探店</span>
+                            <span class="text-[10px] text-slate-400">Dessert</span>
+                        </button>
+                        <button type="button" onclick="toggleActivityOption(this, '🚶‍♂️ 晚风江边漫步 · River Walk')" class="activity-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🚶‍♂️</span> 晚风江边漫步</span>
+                            <span class="text-[10px] text-slate-400">Walk</span>
+                        </button>
+                        <button type="button" onclick="toggleActivityOption(this, '🏠 私密居家小电影 · Home Surprise')" class="activity-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🏠</span> 私密居家小电影</span>
+                            <span class="text-[10px] text-slate-400">Movie</span>
+                        </button>
+                        <button type="button" onclick="toggleActivityOption(this, '🚗 深夜兜风看夜景 · Night Drive')" class="activity-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span>🚗</span> 深夜兜风看夜景</span>
+                            <span class="text-[10px] text-slate-400">Drive</span>
+                        </button>
+                        <button type="button" onclick="toggleActivityOption(this, '📸 复古大头贴记录 · Photo Booth')" class="activity-btn glass-card-interactive p-3 rounded-xl border border-slate-700/80 bg-slate-900/60 text-left text-xs font-medium text-slate-200 flex items-center justify-between col-span-1 sm:col-span-2">
+                            <span class="flex items-center gap-2"><span>📸</span> 复古大头贴记录</span>
+                            <span class="text-[10px] text-slate-400">Photo Booth</span>
+                        </button>
+                    </div>
+                    <input type="text" id="customActivity" class="w-full px-3.5 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-xs text-rose-100 placeholder:text-slate-500 focus:ring-2 focus:ring-rose-400 focus:outline-none" placeholder="✏️ 或填写你期待的专属活动...">
+                </div>
+
+                <!-- 4. Notes & Whispers -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-rose-200 flex items-center gap-1">
+                        <span>💌</span> 想对他说的悄悄话 / 备注要求
+                    </label>
+                    <textarea id="replyNote" rows="2" class="w-full px-3.5 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-xs text-rose-100 placeholder:text-slate-500 focus:ring-2 focus:ring-rose-400 focus:outline-none" placeholder="例如：记得带相机帮我拍照！/ 准时接我哦~"></textarea>
+                </div>
+
+                <!-- Submit Action -->
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-rose-900/60 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <span>✨ 生成约会回信 💖</span>
+                </button>
+
+            </form>
+        </section>
+
+        <!-- ================= STEP 3: SUMMARY, CALENDAR BLOCKER & EMAIL RSVP ================= -->
+        <section id="step3" class="step-page step-hidden w-full glass-card rounded-3xl p-5 sm:p-8 relative">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-tr from-rose-600 to-pink-500 text-white rounded-full flex items-center justify-center mx-auto text-3xl mb-3 shadow-lg shadow-rose-900/50 animate-bounce">
+                    💌
+                </div>
+                <h2 class="text-2xl font-serif-custom font-bold text-rose-100">七夕约会确认函已生成！</h2>
+                <p class="text-xs text-rose-300 font-medium mt-1">恭喜！你们的浪漫之约已成功约定</p>
+            </div>
+
+            <!-- Summary Receipt Card -->
+            <div class="bg-slate-900/90 rounded-2xl p-4 sm:p-5 border border-rose-500/30 mb-6 space-y-3 text-xs text-slate-200 shadow-inner">
+                <div class="flex justify-between items-center pb-2.5 border-b border-slate-800 font-bold text-rose-200 text-sm">
+                    <span>💖 约会告白回执单</span>
+                    <span class="text-rose-400">已接纳 (ACCEPTED)</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-1">
+                    <span class="text-slate-400 font-medium">约会时间：</span>
+                    <span id="summaryTime" class="col-span-2 font-bold text-rose-100">2026-08-19 18:30</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-1">
+                    <span class="text-slate-400 font-medium">美食品类：</span>
+                    <span id="summaryFood" class="col-span-2 font-bold text-rose-100">🥩 浪漫烛光西餐</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-1">
+                    <span class="text-slate-400 font-medium">饭后活动：</span>
+                    <span id="summaryActivity" class="col-span-2 font-bold text-rose-100">🍰 精致甜品探店</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-1">
+                    <span class="text-slate-400 font-medium">悄悄话：</span>
+                    <span id="summaryNote" class="col-span-2 italic text-rose-300">“准时来接我哦！”</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <!-- 1. Download iCalendar (.ics) file button -->
+                <button onclick="downloadCalendarICS()" class="w-full py-3.5 bg-slate-900/90 border border-rose-400/80 text-rose-200 hover:bg-slate-800 font-bold text-xs sm:text-sm rounded-xl shadow-sm active:scale-95 transition cursor-pointer flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>📅 添加至手机日历 (下载 .ics 日历提醒)</span>
+                </button>
+
+                <!-- 2. Send via Email Button -->
+                <button onclick="sendRSVPEmail()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-rose-900/50 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span>📧 发送回信邮件给男朋友 & 自己</span>
+                </button>
+
+                <!-- 3. Copy Summary for WeChat / Messages -->
+                <button onclick="copySummaryText()" class="w-full py-3 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 font-semibold text-xs rounded-xl border border-slate-700 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                    </svg>
+                    <span>复制文本截图发微信/QQ 💬</span>
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="goToStep1()" class="text-xs text-rose-400 underline hover:text-rose-300">返回首页重新编辑</button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-[11px] text-slate-500 mt-8 mb-4">
+            <p>© 2026 Qixi Romantic Date Invitation | Designed with ❤️</p>
+        </footer>
+    </main>
+
+    <!-- CONFIGURATION EDIT MODAL FOR SENDER -->
+    <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 bg-slate-900/95 shadow-2xl max-h-[90vh] overflow-y-auto border border-rose-500/30">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-rose-200 flex items-center gap-2">
+                    <span>⚙️</span> 自定义约会邀请函
+                </h3>
+                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            </div>
+            
+            <form id="configForm" onsubmit="saveConfiguration(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">女友称呼 / 名字</label>
+                    <input type="text" id="cfgName" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none" placeholder="例如：宝包 / 小甜心">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">邀请情书正文</label>
+                    <textarea id="cfgSubtitle" rows="3" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none" placeholder="输入你想对她说的话..."></textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">你的邮箱 (接收女友回信)</label>
+                    <input type="email" id="cfgBoyfriendEmail" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">女友的邮箱 (抄送女友)</label>
+                    <input type="email" id="cfgGirlfriendEmail" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none">
+                </div>
+
+                <div class="pt-2 flex flex-col gap-2">
+                    <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-medium rounded-xl shadow transition cursor-pointer">
+                        保存设置
+                    </button>
+                    <button type="button" onclick="copyShareableLink()" class="w-full py-2.5 bg-rose-950/80 text-rose-300 border border-rose-500/30 hover:bg-rose-900/80 font-medium rounded-xl transition cursor-pointer">
+                        复制带参数专属链接 🔗
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-800/90 border border-rose-500/30 text-rose-100 px-5 py-2.5 rounded-full text-xs font-medium shadow-xl opacity-0 pointer-events-none transition-opacity duration-300">
+        提示消息
+    </div>
+
+    <script>
+        // --- Web Audio Synthesizer for Romantic Ambiance ---
+        let audioCtx = null;
+        let isBgmPlaying = false;
+        let bgmInterval = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playRomanticNote(freq, duration = 1.5) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        const romanticMelody = [261.63, 329.63, 392.00, 523.25, 440.00, 349.23, 392.00, 493.88];
+        let noteIndex = 0;
+
+        function toggleBGM() {
+            initAudio();
+            const btn = document.getElementById('bgmToggleBtn');
+            const icon = document.getElementById('musicIcon');
+
+            if (isBgmPlaying) {
+                clearInterval(bgmInterval);
+                isBgmPlaying = false;
+                icon.classList.remove('animate-spin');
+                showToast("背景音效已暂停 🎵");
+            } else {
+                isBgmPlaying = true;
+                icon.classList.add('animate-spin');
+                showToast("浪漫背景音效已开启 🎶");
+                bgmInterval = setInterval(() => {
+                    playRomanticNote(romanticMelody[noteIndex], 2.2);
+                    noteIndex = (noteIndex + 1) % romanticMelody.length;
+                }, 750);
+            }
+        }
+
+        // --- STREAMING_CHUNK:Configuring default static application state... ---
+        let config = {
+            name: "宝包",
+            subtitle: "纤云弄巧，飞星传恨，银河迢迢。又一年七夕佳节到了，我准备了一场专属于我们的浪漫约会。全宇宙最可爱的小仙女，你愿意陪我一起度过这个美好的夜晚吗？",
+            boyfriendEmail: "samsonlai020222@gmail.com",
+            girlfriendEmail: "hkq0213smile@gmail.com"
+        };
+
+        let selectedFoods = [];
+        let selectedActivities = [];
+        let finalRSVPData = {};
+
+        // Escaping Refuse Phrases
+        const escapePhrases = [
+            "跑太快抓不到你😜",
+            "再想想嘛~ 🥺",
+            "拒绝无效哦！✨",
+            "真的不考虑吗？💔",
+            "手速不够快~ 🚀",
+            "换个按钮点嘛 ❤️",
+            "点上面‘好呀’！"
+        ];
+        let escapeCount = 0;
+
+        // Initialize Page
+        window.addEventListener('load', () => {
+            loadURLParams();
+            updateUIFromConfig();
+            initHeartCanvas();
+            initEscapeButtonMobileLogic();
+            startCountdown();
+        });
+
+        // --- STREAMING_CHUNK:Implementing touch and mouse escape logic for Refuse button... ---
+        function initEscapeButtonMobileLogic() {
+            const noBtn = document.getElementById('no-btn');
+            const noBtnText = document.getElementById('noBtnText');
+            const container = document.getElementById('interactiveZone');
+            if (!noBtn || !container) return;
+
+            let posX = 0;
+            let posY = 0;
+
+            function escapeButton(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                const containerRect = container.getBoundingClientRect();
+                const btnRect = noBtn.getBoundingClientRect();
+
+                const maxX = Math.max(40, (containerRect.width / 2) - (btnRect.width / 2));
+                const maxY = 55;
+
+                let newX = (Math.random() - 0.5) * maxX * 2;
+                let newY = (Math.random() - 0.5) * maxY * 2;
+
+                if (Math.abs(newX - posX) < 30) newX += newX >= 0 ? 40 : -40;
+                if (Math.abs(newY - posY) < 20) newY += newY >= 0 ? 30 : -30;
+
+                posX = newX;
+                posY = newY;
+
+                noBtn.style.transform = `translate(${posX}px, ${posY}px)`;
+
+                escapeCount++;
+                if (noBtnText && escapePhrases.length > 0) {
+                    noBtnText.innerText = escapePhrases[escapeCount % escapePhrases.length];
+                }
+            }
+
+            noBtn.addEventListener('mouseover', escapeButton);
+            noBtn.addEventListener('touchstart', escapeButton, { passive: false });
+            noBtn.addEventListener('click', escapeButton);
+        }
+
+        // --- Food Choice Option Selection ---
+        function toggleFoodOption(btn, foodName) {
+            const idx = selectedFoods.indexOf(foodName);
+            if (idx > -1) {
+                selectedFoods.splice(idx, 1);
+                btn.classList.remove('option-selected');
+                btn.classList.add('border-slate-700/80', 'bg-slate-900/60', 'text-slate-200');
+            } else {
+                selectedFoods.push(foodName);
+                btn.classList.remove('border-slate-700/80', 'bg-slate-900/60', 'text-slate-200');
+                btn.classList.add('option-selected');
+            }
+        }
+
+        // --- Activity Choice Option Selection ---
+        function toggleActivityOption(btn, actName) {
+            const idx = selectedActivities.indexOf(actName);
+            if (idx > -1) {
+                selectedActivities.splice(idx, 1);
+                btn.classList.remove('option-selected');
+                btn.classList.add('border-slate-700/80', 'bg-slate-900/60', 'text-slate-200');
+            } else {
+                selectedActivities.push(actName);
+                btn.classList.remove('border-slate-700/80', 'bg-slate-900/60', 'text-slate-200');
+                btn.classList.add('option-selected');
+            }
+        }
+
+        function loadURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('name')) config.name = params.get('name');
+            if (params.has('subtitle')) config.subtitle = params.get('subtitle');
+            if (params.has('bEmail')) config.boyfriendEmail = params.get('bEmail');
+            if (params.has('gEmail')) config.girlfriendEmail = params.get('gEmail');
+        }
+
+        function updateUIFromConfig() {
+            document.getElementById('targetName').innerText = config.name;
+            document.getElementById('heroSubtitle').innerText = config.subtitle;
+        }
+
+        // --- Step Navigation & Transitions ---
+        function goToStep1() {
+            document.getElementById('step1').classList.remove('step-hidden');
+            document.getElementById('step2').classList.add('step-hidden');
+            document.getElementById('step3').classList.add('step-hidden');
+        }
+
+        function goToStep2() {
+            initAudio();
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+            playRomanticNote(523.25, 1);
+            playRomanticNote(659.25, 1.2);
+
+            document.getElementById('step1').classList.add('step-hidden');
+            document.getElementById('step2').classList.remove('step-hidden');
+            document.getElementById('step3').classList.add('step-hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Countdown Timer Logic ---
+        let countdownTimer = null;
+        const FIXED_QIXI_DATE = "2026-08-19";
+
+        function updateCountdownTarget() {
+            // Function preserved for time select changes
+        }
+
+        function startCountdown() {
+            function update() {
+                const timeVal = document.getElementById('timeSelect')?.value || "18:30";
+                
+                const targetTime = new Date(`${FIXED_QIXI_DATE}T${timeVal}`).getTime();
+                const now = new Date().getTime();
+                const diff = targetTime - now;
+
+                if (diff <= 0) {
+                    document.getElementById('timerDays').innerText = "00";
+                    document.getElementById('timerHours').innerText = "00";
+                    document.getElementById('timerMinutes').innerText = "00";
+                    document.getElementById('timerSeconds').innerText = "00";
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('timerDays').innerText = days.toString().padStart(2, '0');
+                document.getElementById('timerHours').innerText = hours.toString().padStart(2, '0');
+                document.getElementById('timerMinutes').innerText = minutes.toString().padStart(2, '0');
+                document.getElementById('timerSeconds').innerText = seconds.toString().padStart(2, '0');
+            }
+            update();
+            if (countdownTimer) clearInterval(countdownTimer);
+            countdownTimer = setInterval(update, 1000);
+        }
+
+        // --- STREAMING_CHUNK:Generating RSVP summary data for display and export... ---
+        function generateRSVP(e) {
+            e.preventDefault();
+
+            const timeVal = document.getElementById('timeSelect').value;
+            const customFood = document.getElementById('customFood').value.trim();
+            const customActivity = document.getElementById('customActivity').value.trim();
+            const note = document.getElementById('replyNote').value.trim() || "准时来接我哦~ 💕";
+
+            let foodList = [...selectedFoods];
+            if (customFood) foodList.push(`✏️ ${customFood}`);
+            if (foodList.length === 0) foodList.push("🥩 浪漫烛光西餐 · Western");
+
+            let actList = [...selectedActivities];
+            if (customActivity) actList.push(`✏️ ${customActivity}`);
+            if (actList.length === 0) actList.push("🍰 精致甜品探店 · Dessert Hunt");
+
+            finalRSVPData = {
+                date: FIXED_QIXI_DATE,
+                time: timeVal,
+                fullDateTime: `${FIXED_QIXI_DATE} ${timeVal}`,
+                foods: foodList.join(" + "),
+                activity: actList.join(" + "),
+                note: note
+            };
+
+            // Render Summary UI
+            document.getElementById('summaryTime').innerText = finalRSVPData.fullDateTime;
+            document.getElementById('summaryFood').innerText = finalRSVPData.foods;
+            document.getElementById('summaryActivity').innerText = finalRSVPData.activity;
+            document.getElementById('summaryNote').innerText = `“${finalRSVPData.note}”`;
+
+            // Transition to Step 3
+            document.getElementById('step2').classList.add('step-hidden');
+            document.getElementById('step3').classList.remove('step-hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+            }
+        }
+
+        // --- iCalendar (.ics) File Generator ---
+        function downloadCalendarICS() {
+            const timeStr = finalRSVPData.time || "18:30";
+
+            const startClean = `${FIXED_QIXI_DATE.replace(/-/g, '')}T${timeStr.replace(':', '')}00`;
+            const endHour = parseInt(timeStr.split(':')[0]) + 3;
+            const endClean = `${FIXED_QIXI_DATE.replace(/-/g, '')}T${endHour.toString().padStart(2,'0')}${timeStr.split(':')[1]}00`;
+
+            const icsContent = 
+`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Qixi Date Invitation//NONSGML v1.0//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:qixi-${Date.now()}@romantic-date
+DTSTAMP:${startClean}Z
+DTSTART:${startClean}
+DTEND:${endClean}
+SUMMARY:🌹 七夕浪漫约会 - ${config.name}
+DESCRIPTION:七夕约会确认！美食：${finalRSVPData.foods} | 活动：${finalRSVPData.activity} | 备注：${finalRSVPData.note}
+LOCATION:浪漫餐厅/约会地点
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', `七夕约会提醒_${FIXED_QIXI_DATE}.ics`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("📅 日历提醒文件已下载，打开即可添加到手机日历！");
+        }
+
+        // --- STREAMING_CHUNK:Constructing mailto link using configured static email addresses... ---
+        function sendRSVPEmail() {
+            const recipient = config.boyfriendEmail;
+            const cc = config.girlfriendEmail;
+            
+            const subject = encodeURIComponent(`💖 七夕约会回信：${config.name} 已经答应你的邀请啦！`);
+            const bodyText = encodeURIComponent(
+`亲爱的，
+
+我已经接纳了你的七夕浪漫约会邀请函！非常期待我们的约会~ 💕
+
+📌 【我的约会偏好】：
+• 约会时间：${finalRSVPData.fullDateTime}
+• 想要吃的美食：${finalRSVPData.foods}
+• 饭后安排：${finalRSVPData.activity}
+• 给你的悄悄话：${finalRSVPData.note}
+
+期待到时与你相见！✨`
+            );
+
+            const mailtoUrl = `mailto:${recipient}?cc=${cc}&subject=${subject}&body=${bodyText}`;
+            window.location.href = mailtoUrl;
+
+            showToast("📧 已调起手机邮件客户端发信！");
+        }
+
+        // --- Copy Text Summary for WeChat/QQ ---
+        function copySummaryText() {
+            const summaryStr = 
+`💖 【七夕约会回信告白存证】
+亲爱的，我已经接受你的七夕约会邀请啦！✨
+
+⏰ 约会时间：${finalRSVPData.fullDateTime}
+🍽️ 想吃的美食：${finalRSVPData.foods}
+🎬 饭后活动：${finalRSVPData.activity}
+💌 悄悄话：${finalRSVPData.note}
+
+到时不见不散哦！🌹`;
+
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = summaryStr;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            showToast("✨ 约会回信摘要已复制，直接发微信给她/他吧！");
+        }
+
+        // --- Config Modal Actions ---
+        function openConfigModal() {
+            document.getElementById('cfgName').value = config.name;
+            document.getElementById('cfgSubtitle').value = config.subtitle;
+            document.getElementById('cfgBoyfriendEmail').value = config.boyfriendEmail;
+            document.getElementById('cfgGirlfriendEmail').value = config.girlfriendEmail;
+
+            const modal = document.getElementById('configModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeConfigModal() {
+            const modal = document.getElementById('configModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function saveConfiguration(e) {
+            e.preventDefault();
+            config.name = document.getElementById('cfgName').value.trim() || "宝包";
+            config.subtitle = document.getElementById('cfgSubtitle').value.trim() || config.subtitle;
+            config.boyfriendEmail = document.getElementById('cfgBoyfriendEmail').value.trim() || "samsonlai020222@gmail.com";
+            config.girlfriendEmail = document.getElementById('cfgGirlfriendEmail').value.trim() || "hkq0213smile@gmail.com";
+
+            updateUIFromConfig();
+            closeConfigModal();
+            showToast("卡片配置已成功更新！✨");
+        }
+
+        function copyShareableLink() {
+            const params = new URLSearchParams();
+            params.set('name', document.getElementById('cfgName').value || config.name);
+            params.set('subtitle', document.getElementById('cfgSubtitle').value || config.subtitle);
+            if (document.getElementById('cfgBoyfriendEmail').value) params.set('bEmail', document.getElementById('cfgBoyfriendEmail').value);
+            if (document.getElementById('cfgGirlfriendEmail').value) params.set('gEmail', document.getElementById('cfgGirlfriendEmail').value);
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+            
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = shareUrl;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            showToast("🔗 专属网址已复制，可以直接发给对方！");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // --- STREAMING_CHUNK:Rendering background heart particle animations on canvas... ---
+        function initHeartCanvas() {
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = height + 20 + Math.random() * 40;
+                    this.size = Math.random() * 10 + 5;
+                    this.speedY = Math.random() * 0.9 + 0.3;
+                    this.speedX = (Math.random() - 0.5) * 0.5;
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                    this.color = `hsl(${Math.random() * 30 + 330}, 85%, 65%)`;
+                }
+                update() {
+                    this.y -= this.speedY;
+                    this.x += this.speedX;
+                    if (this.y < -30) this.reset();
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(this.x, this.y + topCurveHeight);
+                    ctx.bezierCurveTo(this.x, this.y, this.x - this.size / 2, this.y, this.x - this.size / 2, this.y + topCurveHeight);
+                    ctx.bezierCurveTo(this.x - this.size / 2, this.y + (this.size + topCurveHeight) / 2, this.x, this.y + this.size, this.x, this.y + this.size);
+                    ctx.bezierCurveTo(this.x, this.y + this.size, this.x + this.size / 2, this.y + (this.size + topCurveHeight) / 2, this.x + this.size / 2, this.y + topCurveHeight);
+                    ctx.bezierCurveTo(this.x + this.size / 2, this.y, this.x, this.y, this.x, this.y + topCurveHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            const particles = Array.from({ length: 35 }, () => new Particle());
+
+            function loop() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+    </script>
+</body>
+</html>
